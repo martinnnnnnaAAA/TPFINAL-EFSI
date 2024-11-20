@@ -1,47 +1,87 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { getEventById } from '@/services/api';
+import styles from './eventDetail.module.css';
+
 export default function EventDetail({ params }) {
-    return (
-      <>
-        <section className="section">
-          <div className="container">
-            <div className="event-detail-container">
-              <div className="event-header">
-                <h1>Nombre del Evento</h1>
-                <div className="event-meta">
-                  <span><i className="fas fa-calendar"></i> 15 de Mayo, 2024</span>
-                  <span><i className="fas fa-clock"></i> 19:00 hs</span>
-                  <span><i className="fas fa-map-marker-alt"></i> Buenos Aires, Argentina</span>
-                </div>
-              </div>
-    
-              <div className="event-content">
-                <div className="event-image">
-                  <img src="https://via.placeholder.com/800x400" alt="Evento" />
-                </div>
-    
-                <div className="event-info">
-                  <h2>Descripción</h2>
-                  <p>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod 
-                    tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, 
-                    quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                  </p>
-    
-                  <div className="event-details">
-                    <h2>Detalles del Evento</h2>
-                    <ul>
-                      <li><strong>Organizador:</strong> Nombre del Organizador</li>
-                      <li><strong>Categoría:</strong> Tipo de Evento</li>
-                      <li><strong>Capacidad:</strong> 200 personas</li>
-                      <li><strong>Precio:</strong> $1000</li>
-                    </ul>
-                  </div>
-    
-                  <button className="btn-register">Registrarse al Evento</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </>
-    )
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchEvent = async () => {
+      const data = await getEventById(params.id);
+      setEvent(data);
+      setLoading(false);
+    };
+    fetchEvent();
+  }, [params.id]);
+
+  if (loading) {
+    return <div className={styles.loading}>Cargando...</div>;
   }
+
+  if (!event) {
+    return <div className={styles.error}>Evento no encontrado</div>;
+  }
+
+  return (
+    <div className={styles.eventDetailContainer}>
+      <div className={styles.eventHeader}>
+        <h1>{event.name}</h1>
+        <div className={styles.eventMeta}>
+          <span>
+            <i className="fas fa-calendar"></i>
+            {new Date(event.start_date).toLocaleDateString()}
+          </span>
+          <span>
+            <i className="fas fa-clock"></i>
+            {event.duration_in_minutes} minutos
+          </span>
+          <span>
+            <i className="fas fa-map-marker-alt"></i>
+            {event.event_location.name}
+          </span>
+        </div>
+      </div>
+
+      <div className={styles.eventContent}>
+        <div className={styles.mainInfo}>
+          <img 
+            src={event.imageUrl || 'https://via.placeholder.com/800x400'} 
+            alt={event.name} 
+            className={styles.eventImage}
+          />
+          <div className={styles.description}>
+            <h2>Descripción</h2>
+            <p>{event.description}</p>
+          </div>
+        </div>
+
+        <div className={styles.sidebar}>
+          <div className={styles.priceCard}>
+            <h3>Precio</h3>
+            <div className={styles.price}>${event.price}</div>
+            <button className={styles.registerButton}>
+              Registrarse al Evento
+            </button>
+          </div>
+
+          <div className={styles.infoCard}>
+            <h3>Detalles</h3>
+            <ul>
+              <li>
+                <strong>Capacidad:</strong> {event.max_assistance} personas
+              </li>
+              <li>
+                <strong>Organizador:</strong> {event.creator_user.first_name} {event.creator_user.last_name}
+              </li>
+              <li>
+                <strong>Ubicación:</strong> {event.event_location.full_address}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

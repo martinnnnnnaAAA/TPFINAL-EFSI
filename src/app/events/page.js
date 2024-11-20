@@ -1,48 +1,78 @@
+'use client';
+import { useState, useEffect } from 'react';
+import { getEvents } from '@/services/api';
+import EventCard from '@/components/EventCard';
+import styles from './events.module.css';
+
 export default function Events() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true);
+        const data = await getEvents();
+        setEvents(data.collection);
+        setError(null);
+      } catch (err) {
+        setError('Error al cargar los eventos');
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  if (loading) {
     return (
-        <section className="section-gray">
-        <div className="container">
-          <div className="section-title"></div>
-        <h2>Eventos Disponibles</h2>
-        <p>Encuentra el evento perfecto para ti</p>
-        </div>
-        <div className="events-grid">
-          {/* Ejemplo de tarjetas de eventos */}
-          <div className="event-card">
-            <img src="https://via.placeholder.com/300x200" alt="Evento 1" />
-            <div className="event-info">
-              <h3>Nombre del Evento 1</h3>
-              <p className="event-date">
-                <i className="fas fa-calendar"></i> 15 de Mayo, 2024
-              </p>
-              <p className="event-location">
-                <i className="fas fa-map-marker-alt"></i> Buenos Aires, Argentina
-              </p>
-              <p className="event-description">
-                Breve descripción del evento que se realizará...
-              </p>
-              <a href="/events/1" className="btn-details">Ver Detalles</a>
-            </div>
-          </div>
-  
-          <div className="event-card">
-            <img src="https://via.placeholder.com/300x200" alt="Evento 2" />
-            <div className="event-info">
-              <h3>Nombre del Evento 2</h3>
-              <p className="event-date">
-                <i className="fas fa-calendar"></i> 20 de Mayo, 2024
-              </p>
-              <p className="event-location">
-                <i className="fas fa-map-marker-alt"></i> Córdoba, Argentina
-              </p>
-              <p className="event-description">
-                Breve descripción del evento que se realizará...
-              </p>
-              <a href="/events/2" className="btn-details">Ver Detalles</a>
-            </div>
-          </div>
-        </div>
-      </section>
-        
-    )
+      <div className={styles.loadingContainer}>
+        <div className={styles.loading}>Cargando eventos...</div>
+      </div>
+    );
   }
+
+  if (error) {
+    return (
+      <div className={styles.errorContainer}>
+        <div className={styles.error}>{error}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.eventsContainer}>
+      <div className={styles.eventsHeader}>
+        <h1>Eventos Disponibles</h1>
+        <div className={styles.filters}>
+          <input 
+            type="text" 
+            placeholder="Buscar eventos..." 
+            className={styles.searchInput}
+          />
+          <select className={styles.filterSelect}>
+            <option value="">Todas las categorías</option>
+            <option value="musica">Música</option>
+            <option value="deportes">Deportes</option>
+            <option value="cultura">Cultura</option>
+          </select>
+        </div>
+      </div>
+
+      {events.length === 0 ? (
+        <div className={styles.noEvents}>
+          No hay eventos disponibles
+        </div>
+      ) : (
+        <div className={styles.eventsGrid}>
+          {events.map(event => (
+            <EventCard key={event.id} event={event} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
