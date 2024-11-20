@@ -1,6 +1,3 @@
-import Header from '../components/Header'
-import Footer from '../components/Footer'
-
 export const metadata = {
   title: 'Eventos App',
   description: 'Sistema de gestión de eventos',
@@ -22,4 +19,4 @@ export default function RootLayout({ children }) {
       </body>
     </html>
   )
-} 
+}
