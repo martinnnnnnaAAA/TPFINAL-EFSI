@@ -6,11 +6,28 @@ import styles from './Header.module.css';
 export default function Header() {
     const [user, setUser] = useState(null);
 
-    useEffect(() => {
+    const checkUserData = () => {
         const userData = localStorage.getItem('user');
         if (userData) {
             setUser(JSON.parse(userData));
+        } else {
+            setUser(null);
         }
+    };
+
+    useEffect(() => {
+        checkUserData();
+        
+        // Para cambios en otras pestañas
+        window.addEventListener('storage', checkUserData);
+        
+        // Para cambios en la misma pestaña
+        window.addEventListener('localStorageChange', checkUserData);
+        
+        return () => {
+            window.removeEventListener('storage', checkUserData);
+            window.removeEventListener('localStorageChange', checkUserData);
+        };
     }, []);
 
     const handleLogout = () => {

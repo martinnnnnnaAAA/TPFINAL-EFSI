@@ -12,7 +12,8 @@ const handleResponse = async (response) => {
     if (contentType && contentType.indexOf("application/json") !== -1) {
         return response.json();
     }
-    throw new TypeError("La respuesta no es JSON");
+    const text = await response.text();
+    return { success: response.ok, message: text };
 };
 
 export const loginUser = async (username, password) => {
@@ -49,16 +50,9 @@ export const registerUser = async (userData) => {
 
 export const getEvents = async () => {
     try {
-        // Asegúrate de que esta ruta coincida con tu backend
         const response = await fetch(`${API_URL}/event`);
-        console.log(response)
         const data = await handleResponse(response);
-        return {
-            collection: Array.isArray(data) ? data : [],
-            pagination: {
-                total: Array.isArray(data) ? data.length : 0
-            }
-        };
+        return data;
     } catch (error) {
         console.error('Error obteniendo eventos:', error);
         return { collection: [], pagination: { total: 0 } };

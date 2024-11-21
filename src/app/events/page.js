@@ -14,11 +14,17 @@ export default function Events() {
       try {
         setLoading(true);
         const data = await getEvents();
-        setEvents(data.collection);
-        setError(null);
+        console.log("data", data);
+        console.log("Datos recibidos de la API:", data);
+        if (data && data.collection) {
+          console.log("Collection a establecer:", data.collection);
+          setEvents(data.collection);
+        } else {
+          setError('Los datos recibidos no tienen el formato esperado');
+        }
       } catch (err) {
         setError('Error al cargar los eventos');
-        console.error(err);
+        console.error('Error completo:', err);
       } finally {
         setLoading(false);
       }
@@ -26,6 +32,10 @@ export default function Events() {
 
     fetchEvents();
   }, []);
+
+  useEffect(() => {
+    console.log("events actualizado:", events);
+  }, [events]);
 
   if (loading) {
     return (
